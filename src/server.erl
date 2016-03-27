@@ -54,7 +54,11 @@ handle_call({channel_pid, Channel}, _From, State) ->
   case lists:keysearch(Channel, 2, State#state.channels) of
     {value, {Pid, Channel}} -> {reply, {ok, Pid}, State};
     false -> {reply, fail, State}
-  end.
+  end;
+
+handle_call(Request, _From, State) ->
+  io:format("Bad request: ~p~n", [Request]),
+  {reply, fail, State}.
 
 handle_cast({channel, join, Channel, Userpid}, State) ->
   {noreply, #state{users=[], channels=[]}}.
