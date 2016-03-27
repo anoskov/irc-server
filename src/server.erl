@@ -44,13 +44,13 @@ handle_call({nick, Pid, Nick}, _From, State) ->
              end
   end;
 
-handle_call({user_pid, Nick}, _From, State) ->
+handle_call({get_user, Nick}, _From, State) ->
   case lists:keysearch(Nick, 2, State#state.users) of
     {value, {Pid, Nick}} -> {reply, {ok, Pid}, State};
     false -> {reply, fail, State}
   end;
 
-handle_call({channel_pid, Channel}, _From, State) ->
+handle_call({get_channel, Channel}, _From, State) ->
   case lists:keysearch(Channel, 2, State#state.channels) of
     {value, {Pid, Channel}} -> {reply, {ok, Pid}, State};
     false -> {reply, fail, State}
