@@ -34,9 +34,9 @@ init([]) ->
   {ok, #state{users=[], channels=[]}}.
 
 handle_call({nick, Pid, Nick}, _From, State) ->
-  case lists:keysearch(Nick, 2, State#state.users) of
+  case lists:keyfind(Nick, 2, State#state.users) of
     {value, {_Otherpid, Nick}} -> {reply, fail, State};
-    false -> case lists:keysearch(Pid, 1, State#state.users) of
+    false -> case lists:keyfind(Pid, 1, State#state.users) of
                {value, {Pid, Oldnick}} -> {reply, ok,
                  #state{users=[{Pid, Nick}|lists:delete({Pid, Oldnick}, State#state.users)],
                  channels=State#state.channels}};
@@ -45,13 +45,13 @@ handle_call({nick, Pid, Nick}, _From, State) ->
   end;
 
 handle_call({get_user, Nick}, _From, State) ->
-  case lists:keysearch(Nick, 2, State#state.users) of
+  case lists:keyfind(Nick, 2, State#state.users) of
     {value, {Pid, Nick}} -> {reply, {ok, Pid}, State};
     false -> {reply, fail, State}
   end;
 
 handle_call({get_channel, Channel}, _From, State) ->
-  case lists:keysearch(Channel, 2, State#state.channels) of
+  case lists:keyfind(Channel, 2, State#state.channels) of
     {value, {Pid, Channel}} -> {reply, {ok, Pid}, State};
     false -> {reply, fail, State}
   end;
