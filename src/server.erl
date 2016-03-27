@@ -15,7 +15,7 @@
 %% API
 -export([start/0]).
 
--export([init/1]).
+-export([init/1, handle_call/3]).
 
 -record(state, {users, channels}).
 
@@ -34,7 +34,15 @@ init([]) ->
   {ok, #state{users=[], channels=[]}}.
 
 handle_call({nick, Pid, Nick}, _From, State) ->
-  {reply, ok, #state{users=[], channels=[]}}.
+  case lists:keysearch(Nick, 2, State#state.users) of
+    {value, {_Otherpid, Nick}} -> {reply, fail, State};
+    false -> case lists:keysearch(Pid, 1, State#state.users) of
+               {value, {Pid, Oldnick}} -> {reply, ok,
+                 #state{users=[{Pid, Nick}|lists:delete({Pid, Oldnick}, State#state.users)],
+                 channels=State#state.channels}};
+               false -> {reply, ok, #state{users=[{Pid, Nick}|State#state.users], channels=State#state.channels}}
+             end
+  end.
 
 handle_cast({channel, join, Channel, Userpid}, State) ->
   {noreply, #state{users=[], channels=[]}}.
