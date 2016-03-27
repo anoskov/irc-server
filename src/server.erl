@@ -56,6 +56,9 @@ handle_call({get_channel, Channel}, _From, State) ->
     false -> {reply, fail, State}
   end;
 
+handle_call({create_channel, Channel}, _From, State) ->
+  {reply, ok, State};
+
 handle_call(Request, _From, State) ->
   io:format("Bad request: ~p~n", [Request]),
   {reply, fail, State}.
