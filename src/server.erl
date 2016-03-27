@@ -42,6 +42,12 @@ handle_call({nick, Pid, Nick}, _From, State) ->
                  channels=State#state.channels}};
                false -> {reply, ok, #state{users=[{Pid, Nick}|State#state.users], channels=State#state.channels}}
              end
+  end;
+
+handle_call({channel_pid, Channel}, _From, State) ->
+  case lists:keysearch(Channel, 2, State#state.channels) of
+    {value, {Pid, Channel}} -> {reply, {ok, Pid}, State};
+    false -> {reply, fail, State}
   end.
 
 handle_cast({channel, join, Channel, Userpid}, State) ->
