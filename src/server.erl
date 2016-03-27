@@ -15,6 +15,8 @@
 %% API
 -export([start/0]).
 
+-export([init/1]).
+
 -record(state, {users, channels}).
 
 start() ->
@@ -25,6 +27,10 @@ start_link() ->
 
 init([]) ->
   io:format("Initializing server...~n"),
+  case gen_tcp:listen(6669, [{packet, line}, {reuseaddr, true}]) of
+    {ok, Lsocket} -> spawn(server, accept_connection, [Lsocket]);
+    {error, Reason} -> io:format("Server listen error: ~p~n", [Reason])
+  end,
   {ok, #state{users=[], channels=[]}}.
 
 handle_call({nick, Pid, Nick}, _From, State) ->
