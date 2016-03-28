@@ -13,21 +13,19 @@
 -author("Andrew Noskov").
 
 %% API
--export([start/0]).
 
--export([init/1, handle_call/3]).
+-export([start_link/0, init/1, handle_call/3, terminate/2]).
+
+-export([accept_connection/1]).
 
 -record(state, {users, channels}).
-
-start() ->
-  start_link().
 
 start_link() ->
   gen_server:start_link({global, server}, ?MODULE, [], []).
 
 init([]) ->
   io:format("Initializing server...~n"),
-  case gen_tcp:listen(6669, [{packet, line}, {reuseaddr, true}]) of
+  case gen_tcp:listen(6667, [{packet, line}, {reuseaddr, true}]) of
     {ok, Lsocket} -> spawn(server, accept_connection, [Lsocket]);
     {error, Reason} -> io:format("Server listen error: ~p~n", [Reason])
   end,
@@ -75,3 +73,16 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
+
+accept_connection(LSocket) ->
+  case gen_tcp:accept(LSocket) of
+    {ok, Socket} ->
+      Ref = erlang:make_ref(),
+      {ok, Pid} = broker:start_link(Ref),
+      gen_tcp:controlling_process(Socket, Pid),
+      gen_server:cast(Pid, {create, Socket}),
+      server:accept_connection(LSocket);
+    {error, Error} ->
+      io:format("Accept connection error: ~p~n", [Error]),
+      server:accept_connection(LSocket)
+  end.
